@@ -11,6 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       YOUTUBE_API_KEY_GA: ${{ secrets.YOUTUBE_API_KEY_GA }}    
 
     steps:
@@ -53,5 +54,3 @@ jobs:
         git add .
         git commit -m 'Update dashboard with latest YouTube channel info'
         git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
