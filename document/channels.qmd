@@ -1,0 +1,25 @@
+---
+title: "정당 유튜브 채널"
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| eval: false
+#| include: false
+170 + 108 + 12 + 3 + 3 + 1 + 1 + 1
+# 무소속 국회의장 1명 
+```
+
+
+1. [민주당(170)](https://youtube.com/channel/UCoQD2xsqwzJA93PTIYERokg): UCoQD2xsqwzJA93PTIYERokg 
+1. [국민의힘(108)](https://youtube.com/channel/UCGd1rNecfS_MND8PQsKOJhQ): UCGd1rNecfS_MND8PQsKOJhQ
+1. [조국혁신당(12)](https://youtube.com/channel/UCKsehTG1cZIeb80J4AyiJ6Q): UCKsehTG1cZIeb80J4AyiJ6Q
+1. [개혁신당(3)](https://youtube.com/channel/UCdkv2W-p3wEK5REQHfu7OKA): UCdkv2W-p3wEK5REQHfu7OKA
+1. [진보당(3)](https://youtube.com/channel/UCD2FurCIhOsG3FsTM1-jirA): UCD2FurCIhOsG3FsTM1-jirA
+1. [새로운미래(1)](https://youtube.com/channel/UC58ySWAGaH5AxRQCk3XGLzA): UC58ySWAGaH5AxRQCk3XGLzA
+1. [기본소득당(1)](https://youtube.com/channel/UCvtJBm9C0rd6Py-GB8KLH1A): UCvtJBm9C0rd6Py-GB8KLH1A
+1. [사회민주당(1)](https://youtube.com/channel/UCHXfJ__xZs-BAA-tU8L19rQ): UCHXfJ__xZs-BAA-tU8L19rQ
+
+
