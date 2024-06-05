@@ -29,7 +29,7 @@ jobs:
 
     - name: Run YouTube Channel Info Crawl
       run: |
-        python yt_channels_info_crawl.py
+        python code/yt_channels_info_crawl.py
 
     - name: Set up R
       uses: r-lib/actions/setup-r@v2
