@@ -1,0 +1,4 @@
+google-auth-oauthlib==0.4.6
+google-api-python-client==2.31.0
+python-dotenv==0.19.2
+pyarrow==6.0.1
