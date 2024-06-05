@@ -7,12 +7,12 @@ import google_auth_oauthlib.flow
 import googleapiclient.discovery
 import googleapiclient.errors
 from datetime import datetime
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import pyarrow as pa
 import pyarrow.parquet as pq
 
 # .env 파일에서 API 키 로드
-load_dotenv()
+# load_dotenv()
 API_KEY = os.getenv('YOUTUBE_API_KEY_GA')
 
 # Create a YouTube Data API client

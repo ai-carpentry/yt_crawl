@@ -10,7 +10,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 # .env 파일에서 API 키 로드
-load_dotenv()
+# load_dotenv()
 API_KEY = os.getenv('YOUTUBE_API_KEY_GA')
 
 # Create a YouTube Data API client
