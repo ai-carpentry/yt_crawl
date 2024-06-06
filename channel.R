@@ -5,6 +5,7 @@ library(janitor)
 library(tidyr)
 library(tibble)
 library(purrr)
+library(stringr)
 
 channels_parquet <- fs::dir_ls("data/", glob = "*channel_info.parquet")
 
