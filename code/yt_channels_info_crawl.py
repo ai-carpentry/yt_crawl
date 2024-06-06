@@ -32,8 +32,10 @@ channel_ids = [
 ]
 
 # 크롤링한 데이터를 저장할 디렉토리 생성
-os.makedirs('data', exist_ok=True)
-os.makedirs('data/channel', exist_ok=True)
+# os.makedirs('data', exist_ok=True)
+# os.makedirs('data/channel', exist_ok=True)
+data_dir = os.path.join(os.getenv('GITHUB_WORKSPACE', ''), 'data', 'channel')
+os.makedirs(data_dir, exist_ok=True)
 
 # 크롤링 일자
 today = datetime.now().strftime('%Y%m%d')
@@ -85,7 +87,9 @@ for party_name, channel_id in channel_ids:
 
     # Parquet 파일 경로
     # parquet_file_path = f'data/channel/{party_name}_{channel_id}_{today}_channel_info.parquet'
-    parquet_file_path = os.path.join(os.environ['GITHUB_WORKSPACE'], 'data', 'channel', f"{party_name}_{channel_id}_{today}_channel_info.parquet")
+    # parquet_file_path = os.path.join(os.environ['GITHUB_WORKSPACE'], 'data', 'channel', f"{party_name}_{channel_id}_{today}_channel_info.parquet")
+    parquet_file_path = os.path.join(data_dir, f"{party_name}_{channel_id}_{today}_channel_info.parquet")
+
 
 
     # Write the Arrow table to a Parquet file
