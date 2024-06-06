@@ -19,7 +19,7 @@ API_KEY = os.getenv('YOUTUBE_API_KEY_GA')
 # 
 # print("API key loaded successfully.")
 
-# Create a YouTube Data API client
+# Create a YouTube Data API client 
 youtube = googleapiclient.discovery.build('youtube', 'v3', developerKey=API_KEY)
 print("YouTube Data API client created successfully.")
 
