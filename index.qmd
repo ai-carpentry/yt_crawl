@@ -114,6 +114,11 @@ channels_stat |>
 ```{r}
 #| title: 그래프
 
+library(showtext)  # Load the showtext package
+
+font_add_google("Noto Sans KR", "notosanskr")  # Add Noto Sans Korean font
+showtext_auto()  # Enable showtext
+
 # Assuming channels_stat is your dataset already loaded and processed.
 channels_stat %>%
   select(정당명 = party_name, 
@@ -131,7 +136,7 @@ channels_stat %>%
     geom_col(width = 0.3) +
     facet_wrap(~지표, scales = "free") +
     coord_flip() +
-    theme_minimal() +
+    theme_minimal(base_family = "notosanskr") +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
     scale_y_continuous(labels = function(x) paste0(scales::comma(x), " 만")) +  # Custom label for thousands
