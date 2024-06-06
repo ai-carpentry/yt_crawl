@@ -14,10 +14,10 @@ import pyarrow.parquet as pq
 API_KEY = os.getenv('YOUTUBE_API_KEY_GA')
 
 # API 키가 올바르게 설정되었는지 확인
-if not API_KEY:
-    raise ValueError("API key not found in environment variables.")
-
-print("API key loaded successfully.")
+# if not API_KEY:
+#     raise ValueError("API key not found in environment variables.")
+# 
+# print("API key loaded successfully.")
 
 # Create a YouTube Data API client
 youtube = googleapiclient.discovery.build('youtube', 'v3', developerKey=API_KEY)
