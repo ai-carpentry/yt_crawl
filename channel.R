@@ -2,7 +2,7 @@ library(tidyverse)
 library(arrow)
 library(fs)
 
-channels_parquet <- fs::dir_ls("data/channel/", glob = "*.parquet")
+channels_parquet <- fs::dir_ls("data/", glob = "*channel_info.parquet")
 
 channels_stat <- channels_parquet %>% 
   enframe() |> 
