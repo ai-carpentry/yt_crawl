@@ -45,5 +45,6 @@ jobs:
         git config --local user.name "$GITHUB_ACTOR"
         git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
         git add data/channel/*
+        git add data/*channel_info.paqrquet
         git commit -m "data: YouTube channels info data updated" || echo "No changes to commit"
         git push || echo "No changes to push"
