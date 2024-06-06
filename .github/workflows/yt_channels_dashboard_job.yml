@@ -35,7 +35,7 @@ jobs:
       env:
         YOUTUBE_API_KEY_GA: ${{ secrets.YOUTUBE_API_KEY_GA }}
       run: |
-        python code/yt_channels_info_crawl.py
+        python yt_channels_info_crawl.py
       
     - name: Commit data
       run: |
@@ -44,6 +44,3 @@ jobs:
         git add data/channel/*
         git commit -m "data: YouTube channels info data updated" || echo "No changes to commit"
         git push || echo "No changes to push"
-        
-
-        
