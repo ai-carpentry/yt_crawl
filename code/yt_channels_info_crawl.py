@@ -84,7 +84,9 @@ for party_name, channel_id in channel_ids:
     table = pa.Table.from_pydict(channel_data)
 
     # Parquet 파일 경로
-    parquet_file_path = f'data/channel/{party_name}_{channel_id}_{today}_channel_info.parquet'
+    # parquet_file_path = f'data/channel/{party_name}_{channel_id}_{today}_channel_info.parquet'
+    parquet_file_path = os.path.join(os.environ['GITHUB_WORKSPACE'], 'data', 'channel', f"{party_name}_{channel_id}_{today}_channel_info.parquet")
+
 
     # Write the Arrow table to a Parquet file
     pq.write_table(table, parquet_file_path)

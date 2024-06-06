@@ -1,61 +1,51 @@
-name: Daily YouTube Channel Info Crawl
+name: YouTube Channels Info Crawler
 
 on:
   schedule:
-    - cron: '20 20 * * *' # 매일 한국시간 5시 (UTC 20:20)
-  push:
-    branches:
-      - main  # main 브랜치에 푸시될 때 동작하도록 설정    
+    - cron: '0 17 * * *' # Runs at 5pm UTC (2am KST) every day
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      YOUTUBE_API_KEY_GA: ${{ secrets.YOUTUBE_API_KEY_GA }}    
 
     steps:
-    - name: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v2
-
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v1
-      with:
-        credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}      
-
+      
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.8'
-
-    - name: Install Python dependencies
+        python-version: 3.8
+        
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-
-    - name: Run YouTube Channel Info Crawl
+        
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+        
+    - name: Create data directory
+      run: mkdir -p ${{ github.workspace }}/data/channel
+        
+    - name: Run crawler
+      env:
+        YOUTUBE_API_KEY_GA: ${{ secrets.YOUTUBE_API_KEY_GA }}
       run: |
         python code/yt_channels_info_crawl.py
-
-    - name: Set up R
-      uses: r-lib/actions/setup-r@v2
-
-    - name: Install R packages
+      
+    - name: Commit data
       run: |
-        Rscript -e 'install.packages(c("dplyr", "arrow", "quarto", "reactable", "tidyr", "ggplot2", "forcats", "tidyr"))'
+        git config --local user.email "leehj1232@gmail.com"
+        git config --local user.name "leehj1232"
+        git add data/channel/*
+        git commit -m "data: YouTube channels info data updated"
 
-    - name: Run Data Cleaning Script
-      run: |
-        Rscript channel.R
-
-    - name: Render Quarto Dashboard
-      run: |
-        quarto render index.qmd
-
-    - name: Commit and Push Changes
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git add .
-        git commit -m 'Update dashboard with latest YouTube channel info'
-        git push
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: main
