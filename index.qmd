@@ -15,6 +15,7 @@ editor_options:
 ```{r}
 library(arrow)
 library(reactable)
+library(dplyr)
 
 channels_stat <- 
   read_feather("data/channel_stat.feather")
