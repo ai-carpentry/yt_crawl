@@ -45,11 +45,11 @@ jobs:
 
     - name: Install R packages
       run: |
-        Rscript -e 'install.packages(c("dplyr", "arrow", "quarto", "fs", "purrr", "stringr", "janitor", "tibble", "ggplot2", "forcats", "reactable"))'
+        Rscript -e 'install.packages(c("tidyverse", "arrow", "quarto", "fs", "janitor", "reactable"))'
 
     - name: Run Data Cleaning Script
       run: |
-        Rscript clean.R
+        Rscript channel.R
 
     - name: Render Quarto Dashboard
       run: |
