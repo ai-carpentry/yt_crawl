@@ -42,10 +42,6 @@ jobs:
         git config --local user.email "kwangchun.lee.7@gmail.com"
         git config --local user.name "statkclee"
         git add data/channel/*
-        git commit -m "data: YouTube channels info data updated"
-
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: main
+        git commit -m "data: YouTube channels info data updated" || echo "No changes to commit"
+        git push
+        
