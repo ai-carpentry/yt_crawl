@@ -1,6 +1,9 @@
 name: YouTube Channels Info Crawler
 
 on:
+  push:
+    branches:
+      - main  # main 브랜치에 푸시될 때 동작하도록 설정
   schedule:
     - cron: '0 17 * * *' # Runs at 5pm UTC (2am KST) every day
   workflow_dispatch:
