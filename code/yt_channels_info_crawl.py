@@ -36,9 +36,13 @@ channel_ids = [
 ]
 
 # 크롤링한 데이터를 저장할 디렉토리 생성
-data_dir = os.path.join(os.getenv('GITHUB_WORKSPACE', ''), 'data', 'channel')
+data_dir_history = os.path.join(os.getenv('GITHUB_WORKSPACE', ''), 'data', 'channel')
+os.makedirs(data_dir_history, exist_ok=True)
+
+data_dir = os.path.join(os.getenv('GITHUB_WORKSPACE', ''), 'data')
 os.makedirs(data_dir, exist_ok=True)
 
+print(f"Data directory created at {data_dir_history}")
 print(f"Data directory created at {data_dir}")
 
 # 크롤링 일자
@@ -95,11 +99,14 @@ for party_name, channel_id in channel_ids:
         table = pa.Table.from_pydict(channel_data)
 
         # Parquet 파일 경로
-        parquet_file_path = os.path.join(data_dir, f"{party_name}_{channel_id}_{today}_channel_info.parquet")
+        parquet_file_path_history = os.path.join(data_dir_history, f"{party_name}_{channel_id}_{today}_channel_info.parquet")
+        parquet_file_path = os.path.join(data_dir, f"{party_name}_{channel_id}_channel_info.parquet")
 
         # Write the Arrow table to a Parquet file
+        pq.write_table(table, parquet_file_path_history)
         pq.write_table(table, parquet_file_path)
 
+        print(f"{party_name} 채널 정보 크롤링이 완료되었습니다. 데이터가 {parquet_file_path_history}에 저장되었습니다.")
         print(f"{party_name} 채널 정보 크롤링이 완료되었습니다. 데이터가 {parquet_file_path}에 저장되었습니다.")
     
     except Exception as e:
