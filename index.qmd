@@ -19,6 +19,7 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(forcats)  # For fct_reorder
+library(lubridate)
 
 channels_stat <- 
   read_feather("data/channel_stat.feather")
