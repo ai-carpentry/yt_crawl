@@ -39,8 +39,8 @@ jobs:
       
     - name: Commit data
       run: |
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
+        git config --local user.name "$GITHUB_ACTOR"
+        git config --local user.email "<>"
         git add data/channel/*
         git commit -m "data: YouTube channels info data updated" || echo "No changes to commit"
         git push
