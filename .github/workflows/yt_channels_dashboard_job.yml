@@ -45,18 +45,28 @@ jobs:
 
     # - uses: r-lib/actions/setup-renv@v2
 
-    - name: Install R packages
-      run: |
-        Rscript -e 'install.packages(c("tidyverse", "arrow", "quarto", "fs", "janitor", "reactable"))'
+    # - name: Install R packages
+    #   run: |
+    #     Rscript -e 'install.packages(c("tidyverse", "arrow", "quarto", "fs", "janitor", "reactable"))'
 
+    - name: Install R Packages with pak
+      run: |
+        Rscript -e 'install.packages("pak", repos = "https://cran.rstudio.com")'
+        Rscript -e 'pak::pkg_install(c("tidyverse", "arrow", "fs", "janitor", "reactable"))'
+    
     - name: Run Data Cleaning Script
       run: |
         Rscript channel.R
-
+    
+    - name: Install Quarto
+      uses: quarto-dev/quarto-actions/setup@v2
+      with:
+        version: 1.4.515
+    
     - name: Render Quarto Dashboard
       run: |
-        quarto render index.qmd        
-      
+        quarto render index.qmd
+    
     - name: Commit data
       run: |
         git config --local user.name "$GITHUB_ACTOR"
@@ -66,3 +76,5 @@ jobs:
         git add data/channel_stat.feather
         git commit -m "data: YouTube channels info data updated" || echo "No changes to commit"
         git push || echo "No changes to push"
+
+        
