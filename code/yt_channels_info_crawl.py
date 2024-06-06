@@ -16,7 +16,8 @@ import pyarrow.parquet as pq
 API_KEY = os.getenv('YOUTUBE_API_KEY_GA')
 
 # Create a YouTube Data API client
-youtube = googleapiclient.discovery.build('youtube', 'v3', developerKey=API_KEY)
+# youtube = googleapiclient.discovery.build('youtube', 'v3', developerKey=API_KEY)
+youtube = googleapiclient.discovery.build('youtube', 'v3')
 
 # 정당 유튜브 채널 ID 목록
 channel_ids = [

@@ -18,6 +18,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}      
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
