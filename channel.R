@@ -2,6 +2,7 @@ library(arrow)
 library(fs)
 library(dplyr)
 library(janitor)
+library(tidyr)
 
 channels_parquet <- fs::dir_ls("data/", glob = "*channel_info.parquet")
 
