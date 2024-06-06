@@ -110,4 +110,4 @@ for party_name, channel_id in channel_ids:
         print(f"{party_name} 채널 정보 크롤링이 완료되었습니다. 데이터가 {parquet_file_path}에 저장되었습니다.")
     
     except Exception as e:
-        print(f"An error occurred for {party_name} with ID {channel_id}: {e}")
+        print(f"An error occurred for {party_name} with ID {channel_id}: {e}") 
