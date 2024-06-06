@@ -49,6 +49,11 @@ jobs:
     #   run: |
     #     Rscript -e 'install.packages(c("tidyverse", "arrow", "quarto", "fs", "janitor", "reactable"))'
 
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libcurl4-openssl-dev
+        
     - name: Install R Packages with pak
       run: |
         Rscript -e 'install.packages("pak", repos = "https://cran.rstudio.com")'
