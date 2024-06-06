@@ -16,6 +16,9 @@ editor_options:
 library(arrow)
 library(reactable)
 library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(forcats)  # For fct_reorder
 
 channels_stat <- 
   read_feather("data/channel_stat.feather")
@@ -109,11 +112,6 @@ channels_stat |>
 
 ```{r}
 #| title: 그래프
-
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-library(forcats)  # For fct_reorder
 
 # Assuming channels_stat is your dataset already loaded and processed.
 channels_stat %>%
