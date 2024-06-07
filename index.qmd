@@ -50,7 +50,7 @@ channels_stat |>
         채널 = colDef(html = TRUE, cell = JS("
           function(cellInfo) {
             // Render as a link
-            return '<a href=https://www.youtube.com//watch?v=' + cellInfo.value + '/>' + cellInfo.value + '</a>'
+            return '<a href=https://www.youtube.com/channel/' + cellInfo.value + '/>' + cellInfo.value + '</a>'
           }")),
         정당명   = colDef(show = TRUE, minWidth = 10),  
         채널명   = colDef(show = TRUE, minWidth = 15),
