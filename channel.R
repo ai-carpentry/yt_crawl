@@ -16,7 +16,7 @@ channels_stat <- channels_parquet %>%
   mutate(data = map(data, collect)) |> 
   unnest(cols = c(data)) |> 
   clean_names() |> 
-  mutate(channel =  str_extract(value, "UC[A-Za-z0-9_-]+(?=_\\d{8}_channel_info)")) |> 
+  mutate(channel =  str_extract(value, "UC[A-Za-z0-9_-]+(?=_channel_info)")) |> 
   relocate(channel, .before = value) |> 
   select(-value)
 
