@@ -1,0 +1,279 @@
+---
+title: "네이버, 구글 연관검색어"
+format:
+  html:
+    self-contained: true
+    author-meta: "이광춘"
+    mermaid-format: png
+    # fig-width: 8 #https://quarto.org/docs/computations/execution-options.html#figure-options
+    # fig-height: 6
+    mermaid:
+      theme: neutral # https://quarto.org/docs/authoring/diagrams.html#mermaid-theming
+    theme:
+      - cosmo
+      - r2bit.scss
+    number-depth: 3
+    number-sections: true
+    colorlinks: true
+    # cite-method: biblatex
+    code-overflow: wrap
+    code-link: true
+
+    callout-appearance: simple
+
+    # 마크다운 표 캡션 위치
+    tbl-cap-location: bottom
+    lightbox:
+      match: auto
+      loop: false
+editor_options: 
+  chunk_output_type: console
+
+knitr:
+  opts_chunk:
+    message: false
+    warning: false
+    collapse: true
+    echo: false
+    code-overflow: code-overflow
+    comment: "#>"
+    R.options:
+      knitr.graphics.auto_pdf: true
+    dev: "ragg_png"
+    fig-asp: 0.618  # 1 / phi    
+---
+
+# 연관 검색어
+
+네이버와 구글의 연관검색어는 사용자들이 특정 키워드를 검색할 때 함께 자주 검색하는 연관된 키워드를 보여주는 기능입니다. 이를 통해 사용자들은 검색 키워드와 관련된 추가 정보나 관심사를 파악할 수 있습니다. 연관검색어는 해당 키워드에 대한 대중의 관심사와 트렌드를 반영하며, 사회적 이슈나 화제의 인물에 대한 여론을 간접적으로 파악하는 데에도 활용될 수 있습니다.
+
+![](images/naver_google.jpg)
+
+::: {.callout-note} 
+### 구글 네이버 연관검색어
+
+네이버는 특정 인물, 사안에 대해서 검색을 할 때 1차 연관검색어만 제공하는 반면, 
+구글은 1차, 2차 연관검색어를 제공하는 차이를 보이고 있다.
+
+::::
+
+
+# 네이버
+
+### 연관검색어
+
+```{r}
+#| eval: false
+source("code/related_search_naver_function.R")
+
+create_and_save_naver_graph("김건희")
+
+naver_kkh_tbl <- get_related_naver_data("김건희")
+
+naver_kkh_file_name <- str_glue("data/naver_kkh_tbl.csv")
+
+naver_kkh_tbl |> write_csv(naver_kkh_file_name)
+
+fs::file_copy(naver_kkh_file_name, str_glue("data/{str_remove_all(Sys.Date(), '-')}_naver_kkh_tbl.csv"), overwrite = TRUE)
+
+```
+
+```{r}
+#| eval: false
+source("code/related_search_naver_function.R")
+
+create_and_save_naver_graph("김정숙")
+
+naver_kjs_tbl <- get_related_naver_data("김정숙")
+
+naver_kjs_file_name <- str_glue("data/naver_kjs_tbl.csv")
+
+naver_kjs_tbl |> write_csv(naver_kjs_file_name)
+
+fs::file_copy(naver_kjs_file_name, str_glue("data/{str_remove_all(Sys.Date(), '-')}_naver_kjs_tbl.csv"), overwrite = TRUE)
+
+```
+
+::: {#fig-naver layout-ncol=2}
+
+![김건희 연관검색어](images/김건희_네이버연관검색어.jpeg)
+
+![김정숙 연관검색어](images/김정숙_네이버연관검색어.jpeg)
+
+네이버 검색엔진 연관검색어
+:::
+
+## AI 분석
+
+### 김건희 및 김정숙 연관검색어 분석 (네이버)
+
+| 카테고리 | 김건희 연관검색어 | 김정숙 연관검색어 |
+|---|---|---|
+| 주요 키워드 | 얼굴, 여사, 특검, 디올백, 명품백 | 여사, 타지마할, 기내식, 인도, 특검 |
+| 1차 검색어 | 얼굴, 여사, 특검, 디올백, 명품백 | 여사, 타지마할, 기내식, 인도, 특검 |
+
+### 맥락 및 함의
+
+| 항목 | 김건희 | 김정숙 |
+|---|---|---|
+| **주요 관심사** | 외모, 스타일, 명품백, 특검 | 해외 방문, 타지마할, 기내식, 특검 |
+| **대중의 관심** | 외모와 명품 사용에 대한 비판 및 관심 | 해외 활동과 외교 활동에 대한 관심 |
+
+### 대중의 인식
+
+| 항목 | 김건희 | 김정숙 |
+|---|---|---|
+| **대중적 인식** | 외모와 패션, 특히 명품 사용에 대한 비판이 큼 | 해외 방문과 외교 활동에 대한 긍정적 관심 |
+
+### 현재 한국 정치 상황 고려
+
+| 항목 | 김건희 | 김정숙 |
+|---|---|---|
+| **정치적 양극화** | 현직 영부인으로서 외모와 법적 문제로 인한 논란 | 전직 영부인으로서 공적 활동과 법적 문제로 인한 논란 |
+| **역할과 인식** | 사적인 이미지에 대한 대중의 높은 관심 | 공적인 역할과 활동에 대한 대중의 높은 관심 |
+
+### 종합 분석
+
+김건희 여사는 외모와 명품 사용 등 개인적 이미지에 대한 관심이 크고, 정치적 논란의 중심에 서 있습니다. 반면, 김정숙 여사는 주로 해외 활동과 공적 역할에 대한 긍정적 관심을 받고 있습니다. 이는 현직과 전직 영부인에 대한 대중의 인식 차이를 반영하며, 정치적 양극화의 영향을 보여줍니다.
+
+# 구글
+
+## 연관검색어
+
+```{r}
+#| eval: false
+source("code/related_search_google_function.R")
+
+create_and_save_google_graph("김건희")
+
+google_kkh_tbl <- get_related_google_search("김건희")
+
+google_kkh_file <- str_glue("data/google_kkh_tbl.csv")
+
+google_kkh_tbl |> write_csv(google_kkh_file)
+
+fs::file_copy(google_kkh_file, str_glue("data/{str_remove_all(Sys.Date(), '-')}_google_kkh_tbl.csv"), overwrite = TRUE)
+```
+
+```{r}
+#| eval: false
+source("code/related_search_google_function.R")
+
+create_and_save_google_graph("김정숙")
+
+google_kjs_tbl <- get_related_google_search("김정숙")
+
+google_file_name <- str_glue("data/google_kjs_tbl.csv")
+
+google_kjs_tbl |> write_csv(google_file_name)
+
+fs::file_copy(google_file_name, str_glue("data/{str_remove_all(Sys.Date(), '-')}_google_kjs_tbl.csv"), overwrite = TRUE)
+
+```
+
+::: {#fig-naver layout-ncol=2}
+
+![김건희 연관검색어](images/김건희_구글연관검색어.jpeg)
+
+![김정숙 연관검색어](images/김정숙_구글연관검색어.jpeg)
+
+구글 검색엔진 연관검색어
+:::
+
+## AI 분석
+
+```{python}
+#| eval: false
+import pandas as pd
+from dotenv import load_dotenv
+from openai import OpenAI
+import os
+
+# Load environment variables from .env file
+load_dotenv()
+
+client = OpenAI(
+    # This is the default and can be omitted
+    api_key=os.environ.get("OPENAI_API_KEY"),
+)
+
+# Load the data from CSV files
+df_kjs = pd.read_csv('data/google_kjs_tbl.csv')
+df_kkh = pd.read_csv('data/google_kkh_tbl.csv')
+
+# Extract the relevant columns to create keyword lists
+kjs_keywords = df_kjs['lvl_01'].tolist()
+kkh_keywords = df_kkh['lvl_01'].tolist()
+
+# Create a prompt for the OpenAI API
+prompt = f"""
+다음 키워드는 구글 검색 연관검색어에서 추출된 대한민국의 현직 및 전직 영부인과 관련된 것입니다:
+1. 김건희(현직 국민의힘 대통령 영부인): {', '.join(kkh_keywords)}
+2. 김정숙(전직 민주당 대통령 영부인): {', '.join(kjs_keywords)}
+
+각 키워드 세트와 관련된 맥락, 함의, 대중의 인식을 비교하는 자세한 분석을 제공하십시오. 현재 한국의 정치 상황을 고려하십시오.
+"""
+
+# Call the OpenAI API
+chat_completion = client.chat.completions.create(
+    messages=[
+        {
+          "role": "user",
+          "content": prompt,
+        },
+        {
+          "role": "system", 
+          "content": "너는 특정 정당의 명석한 판세분석가다."
+        },
+    ],
+    model="gpt-3.5-turbo",
+)
+
+# Print the response from the API
+print(chat_completion.choices[0].message.content)
+
+```
+
+```{markdown}
+#| include: false
+#| eval: false
+# 챗GPT 4 프롬프트
+첨부된 키워드는 구글 검색 연관검색어에서 검색어 --> 1차 추천 검색어 --> 2차 추천 검색어에 대한 대한민국의 현직 및 전직 영부인과 관련된 것입니다:
+
+1. 김건희(현직 국민의힘 대통령 영부인)
+2. 김정숙(전직 민주당 대통령 영부인)
+
+각 키워드 세트와 관련된 맥락, 함의, 대중의 인식을 비교하는 자세한 분석을 제공하십시오. 현재 한국의 정치 상황을 고려하십시오. 출력결과는 마크다운 표로 작성하여 rmarkdown에서 복사하여 붙여넣어 재사용가능하도록 작성하시오. 한글로 작성하세요.
+```
+
+### 김건희 및 김정숙 연관검색어 분석 (구글)
+
+| 카테고리 | 김건희 연관검색어 | 김정숙 연관검색어 |
+|---|---|---|
+| 주요 키워드 | 자녀, 재혼, 쥴리 | 인도, 여사, 호칭 |
+| 1차 검색어 | 자녀, 재혼, 쥴리 | 인도, 여사, 대통령 |
+| 2차 검색어 | 나이, 윤석열, 의사, 더쿠, 벽화 | 전용기, 초청, 형제, 부모 고향, 호칭 |
+
+### 맥락 및 함의 요약
+
+| 항목 | 김건희 | 김정숙 |
+|---|---|---|
+| **주요 관심사** | 자녀 여부, 윤석열 대통령과의 관계, 재혼 여부, 쥴리 논란 | 해외 방문, 인도 방문, 전용기 사용, 가족 배경, 호칭 논란 |
+| **대중의 관심** | 개인적 배경과 논란, 정치적 이슈 | 공적인 활동, 가족 배경, 공적 호칭 |
+| **정치적 양극화** | 현직 영부인으로서의 논란과 관심 집중 | 전직 영부인의 공적 활동과 배경에 대한 관심 |
+
+### 대중의 인식
+
+| 항목 | 김건희 | 김정숙 |
+|---|---|---|
+| **대중적 인식** | 개인적 논란과 정치적 이슈 중심 | 공적 활동과 가족 배경 중심 |
+| **영부인 역할** | 개인적 배경과 논란에 대한 집중 | 공적 활동과 관련된 긍정적 인식 |
+
+### 현재 한국 정치 상황 고려
+
+| 항목 | 김건희 | 김정숙 |
+|---|---|---|
+| **정치적 양극화** | 현직 영부인으로서 정치적 논란과 관심의 초점 | 전직 영부인의 공적 활동과 예산 사용 논란 |
+| **역할과 인식** | 개인적 논란과 정치적 쟁점의 중심 | 공적 활동과 가족 배경에 대한 대중의 관심 |
+
+
