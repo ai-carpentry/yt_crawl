@@ -10,6 +10,161 @@ editor_options:
 
 {{< include dashboards/summary.qmd >}}
 
+# 추세
+
+::: panel-tabset
+
+## 일별
+
+```{r}
+library(arrow)
+library(reactable)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(forcats)  # For fct_reorder
+library(lubridate)
+library(showtext)
+library(scales)
+
+font_add_google("Noto Sans KR", "notosanskr")  # Add Noto Sans Korean font
+showtext_auto()  # Enable showtext
 
 
+file_names <- list.files("data/channel")
 
+history_raw <- paste0("data/channel/", file_names) |> 
+  enframe() |> 
+  mutate(날짜 = stringr::str_extract(value, "\\d{8}")) |> 
+  mutate(data = map(value, read_parquet)) |> 
+  select(날짜, data)
+
+history_tbl <- history_raw |> 
+  unnest(data) |> 
+  janitor::clean_names(ascii = FALSE) |> 
+  mutate(날짜 = as.Date(날짜, format = "%Y%m%d")) |> 
+  mutate(view_count = view_count/10^7,
+         subscriber_count = subscriber_count / 10^4) |>
+  select(날짜, party_name, dplyr::ends_with("count")) |> 
+  pivot_longer(cols = -c(날짜, party_name), names_to = "토픽", values_to = "값") |> 
+  mutate(토픽 = case_when(str_detect(토픽, "subscriber") ~ "구독자수",
+                          str_detect(토픽, "view") ~ "조회수",
+                          str_detect(토픽, "video") ~ "비디오수")) 
+
+party_names_factor <- history_raw |> 
+  unnest(data) |> 
+  janitor::clean_names(ascii = FALSE) |> 
+  group_by(party_name) |>
+  summarise(구독자수 = max(subscriber_count),
+            조회수 = max(view_count),
+            비디오수 = max(video_count)) |> 
+  mutate(party_name = fct_reorder(party_name, 구독자수, .desc = TRUE)) |> 
+  arrange(party_name) |> 
+  pull(party_name) 
+
+
+history_tbl |>
+  mutate(토픽 = factor(토픽, levels = c("구독자수", "조회수", "비디오수"))) |>
+  mutate(party_name = factor(party_name, levels = levels(party_names_factor))) |>
+  ggplot(aes(x = 날짜, y = 값, color = party_name)) +
+    geom_line() +
+    geom_point() +
+    facet_wrap(
+        토픽 ~ .,
+        scales = "free",
+        labeller = labeller(
+            토픽 = c(
+                "구독자수" = "구독자 수 (만명)",
+                "조회수" = "총 조회수 (천만회)",
+                "비디오수" = "총 비디오 수 (개)"
+            )
+        )
+    ) +
+    labs(
+        title = "원내정당 유튜브 채널 활동성 추세",
+        x = NULL,
+        y = NULL,
+        color = "정당명"
+    ) +
+    theme_classic(base_family = "notosanskr") +
+    theme(
+        legend.position = "top",
+        plot.title = element_text(size = 20, face = "bold"),
+        axis.title = element_text(size = 16),
+        axis.text = element_text(size = 12),
+        strip.text = element_text(size = 16),
+        legend.text = element_text(size = 14),
+        legend.title = element_text(size = 16)
+    ) +
+    scale_color_manual(values = c(
+        "민주당" = "#152484",
+        "국민의힘" = "#E61E2B",
+        "조국혁신당" = "#004098",
+        "개혁신당" = "#FF7210",
+        "진보당" = "#D6001C",
+        "새로운미래" = "#45BABD",
+        "기본소득당" = "#00D2C3",
+        "사회민주당" = "#43A213"
+    ))+
+    scale_x_date(date_labels = "%m월%d일", date_breaks = "1 day") +
+    scale_y_sqrt(labels = scales::comma) +
+    guides(colour = guide_legend(nrow = 1))
+
+# library(ggh4x)
+# library(ggplot2)
+# library(scales)
+# 
+# history_tbl |>
+#   mutate(토픽 = factor(토픽, levels = c("구독자수", "조회수", "비디오수"))) |> 
+#   ggplot(aes(x = 날짜, y = 값, color = party_name)) +
+#     geom_line() +
+#     geom_point() +
+#     facet_grid(
+#         토픽 ~ .,
+#         scales = "free",
+#         labeller = labeller(
+#             토픽 = c(
+#                 "구독자수" = "구독자 수",
+#                 "조회수" = "총 조회수",
+#                 "비디오수" = "총 비디오 수"
+#             )
+#         )
+#     ) +
+#     labs(
+#         title = "원내정당 유튜브 추세",
+#         x = NULL,
+#         y = NULL,
+#         color = "정당명"
+#     ) +
+#     theme_minimal(base_family = "notosanskr") +
+#     theme(legend.position = "top") +
+#     scale_color_manual(values = c(
+#         "민주당" = "#152484",
+#         "국민의힘" = "#E61E2B",
+#         "조국혁신당" = "#004098",
+#         "개혁신당" = "#FF7210", 
+#         "진보당" = "#D6001C",
+#         "새로운미래" = "#45BABD",
+#         "기본소득당" = "#00D2C3",
+#         "사회민주당" = "#43A213"
+#     )) +
+#     ggh4x::facetted_pos_scales(
+#         y = list(
+#             "구독자수" = scale_y_sqrt(labels = function(x) paste0(scales::comma(x), " 만명")),
+#             "조회수" = scale_y_sqrt(labels = function(x) paste0(scales::comma(x), " 천만회")),
+#             "비디오수" = scale_y_sqrt(labels = function(x) paste0(scales::comma(x), " 개"))
+#         )
+#     ) +
+#     scale_x_date(date_labels = "%m월%d일", date_breaks = "1 day")
+
+```
+
+## 주별
+
+출시예정
+
+## 월별
+
+출시예정
+
+:::
