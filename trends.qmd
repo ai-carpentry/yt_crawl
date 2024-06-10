@@ -124,9 +124,57 @@ print(all_data)
 
 # 데이터프레임 저장 (옵션)
 all_data.to_csv('data/trends/google_trends_data_by_region_and_month_kr.csv')
+```
 
+### 채널별
+
+```{python}
+from pytrends.request import TrendReq
+import pandas as pd
+from datetime import datetime, timedelta
+
+# pytrends 객체 생성
+pytrends = TrendReq(hl='ko-KR', tz=360)
+
+# 관심 검색어 설정
+keywords = ["김건희", "김정숙", "김혜경"]
+
+# 채널별 설정
+channels = ['web', 'youtube', 'news']
+
+# 결과를 저장할 데이터프레임 초기화
+channel_data = pd.DataFrame()
+
+# 데이터 수집
+for channel in channels:
+    # 검색 채널 설정
+    if channel == 'web':
+        gprop = ''
+    elif channel == 'youtube':
+        gprop = 'youtube'
+    elif channel == 'news':
+        gprop = 'news'
+    
+    # 검색어 트렌드 요청
+    pytrends.build_payload(keywords, cat=0, timeframe='today 12-m', geo='KR', gprop=gprop)
+    
+    # 관심도 추출
+    interest_over_time_df = pytrends.interest_over_time()
+    interest_over_time_df['channel'] = channel      # 채널 추가
+    channel_data = pd.concat([channel_data, interest_over_time_df])
+
+# 인덱스 리셋
+channel_data.reset_index(inplace=True)
+
+# 데이터프레임 출력
+print(channel_data)
+
+# 데이터프레임 저장 (옵션)
+channel_data.to_csv('data/trends/google_trends_data_by_month_and_channel_kr.csv', index=False)
 
 ```
+
+
 
 ## 데이터 시각화
 
@@ -137,7 +185,7 @@ library(tidyverse)
 
 gtrends_raw <- read_csv("data/trends/google_trends_data_kr.csv")
 
-gtrends_raw |> 
+gtrends_all_g <- gtrends_raw |> 
   select(-isPartial) |> 
   pivot_longer(cols = c(김건희, 김정숙, 김혜경), 
                names_to = "검색어", 
@@ -150,9 +198,16 @@ gtrends_raw |>
                                   "김혜경" = "skyblue")) +
     scale_x_date(date_labels = "%y-%m", date_breaks = "1 month") +
     labs(title = "구글 트렌드 검색어 관심도 추이",
+         subtitle = "기간: 최근 1년",
          x = NULL,
-         y = "관심도") 
+         y = "관심도") +
+    theme_korean() +
+    theme(legend.position = "top") 
 
+ragg::agg_jpeg("images/trends/gtrends_all.jpeg", width = 10, height = 7, units = "in", res = 300)
+gtrends_all_g
+dev.off()
+  
 ```
 
 
@@ -163,19 +218,556 @@ library(tidyverse)
 
 gtrends_region_raw <- read_csv("data/trends/google_trends_data_by_region_and_month_kr.csv")
 
-gtrends_region_raw |> 
+gtrends_region_g <- gtrends_region_raw |> 
+  separate(timeframe, into = c("start_date", "end_date"), sep = " ") |>
+  mutate(년월 = floor_date(as.Date(start_date), "month")) |> 
+  select(-start_date, -end_date) |>
+  mutate(권역 = case_when(
+    geoName == "서울특별시" ~ "수도권",
+    geoName == "인천광역시" ~ "수도권",
+    geoName == "경기도"     ~ "수도권",
+    geoName == "부산광역시" ~ "부울경",
+    geoName == "울산광역시" ~ "부울경",
+    geoName == "대구광역시" ~ "대구경북",
+    geoName == "경상남도" ~ "부울경",
+    geoName == "경상북도" ~ "대구경북",
+    geoName == "대전광역시" ~ "대전충청",
+    geoName == "세종특별자치시" ~ "대전충청",
+    geoName == "충청북도" ~ "대전충청",
+    geoName == "충청남도" ~ "대전충청",
+    geoName == "광주광역시" ~ "광주전라",
+    geoName == "전라북도" ~ "광주전라",
+    geoName == "전라남도" ~ "광주전라",
+    geoName == "강원도" ~ "강원제주",
+    geoName == "제주특별자치도" ~ "강원제주",
+    TRUE ~ "기타")) |>
+  group_by(년월, 권역) |>
+  summarise(김건희 = mean(김건희, na.rm = TRUE),
+            김정숙 = mean(김정숙, na.rm = TRUE),
+            김혜경 = mean(김혜경, na.rm = TRUE)) |> 
+  ungroup() |> 
+  mutate(권역 = factor(권역, levels = c("수도권", "부울경", "대구경북", "대전충청", "광주전라", "강원제주"))) |> 
   pivot_longer(cols = c(김건희, 김정숙, 김혜경), 
                names_to = "검색어", 
                values_to = "관심도") |> 
-  ggplot(aes(x=timeframe, y=관심도, color=검색어, group = 검색어)) +
+  ggplot(aes(x=년월, y=관심도, color=검색어, group = 검색어)) +
     geom_line() +
     geom_point(size = 0.7) +
     scale_color_manual(values = c("김건희" = "red", 
                                   "김정숙" = "blue",
                                   "김혜경" = "skyblue")) +
-    labs(title = "구글 트렌드 검색어 관심도 추이",
+    labs(title = "구글 트렌드 검색어 권역별 관심도 추이",
+         subtitle = "기간: 최근 1년",
          x = NULL,
          y = "관심도") +
-    facet_wrap(~ geoName, scales = "free") 
+    facet_wrap(~ 권역, scales = "free") +
+    scale_x_date(date_labels = "%y-%m", date_breaks = "1 month") +
+    theme_korean() +
+    theme(legend.position = "top",
+          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+  
+
+ragg::agg_jpeg("images/trends/gtrends_region.jpeg", width = 10, height = 7, units = "in", res = 300)
+gtrends_region_g
+dev.off()
+
 
 ```
+
+
+### 채널
+
+```{r}
+library(tidyverse)
+
+gtrends_channel_raw <- read_csv("data/trends/google_trends_data_by_month_and_channel_kr.csv")
+
+gtrends_channel_g <- gtrends_channel_raw |> 
+  filter(channel != "news") |> 
+  pivot_longer(cols = c(김건희, 김정숙, 김혜경), 
+               names_to = "검색어", 
+               values_to = "관심도") |> 
+  ggplot(aes(x=date, y=관심도, color=검색어)) +
+    geom_line() +
+    geom_point(size = 0.7) +
+    scale_color_manual(values = c("김건희" = "red", 
+                                  "김정숙" = "blue",
+                                  "김혜경" = "skyblue")) +
+    labs(title = "구글 트렌드 검색어 채널별 관심도 추이",
+         subtitle = "기간: 최근 1년",
+         x = NULL,
+         y = "관심도") +
+    facet_wrap(~ channel, scales = "free") +
+    scale_x_date(date_labels = "%y-%m", date_breaks = "1 month") +
+    theme_korean() +
+    theme(legend.position = "top",
+          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+  
+
+ragg::agg_jpeg("images/trends/gtrends_channel.jpeg", width = 10, height = 7, units = "in", res = 300)
+gtrends_channel_g
+dev.off()
+```
+
+
+# 네이버
+
+## 데이터 수집
+
+### 전체
+
+```{python}
+import requests
+import json
+from dotenv import load_dotenv
+import os
+import pandas as pd
+from datetime import datetime, timedelta
+
+# .env 파일 로드
+load_dotenv()
+
+# .env 파일에서 클라이언트 ID와 시크릿 가져오기
+client_id = os.getenv('NAVER_CLIENT_ID_PY')
+client_secret = os.getenv('NAVER_CLIENT_SECRET_PY')
+
+# 검색어 설정
+keywords = ["김건희", "김정숙", "김혜경"]
+
+# 최근 1년 기간 설정
+end_date = datetime.now()
+start_date = end_date - timedelta(days=365)
+start = start_date.strftime('%Y-%m-%d')
+end = end_date.strftime('%Y-%m-%d')
+
+url = 'https://openapi.naver.com/v1/datalab/search' 
+
+# 요청 헤더 설정
+headers = {
+    'X-Naver-Client-Id': client_id, 
+    'X-Naver-Client-Secret': client_secret, 
+    'Content-Type': 'application/json'
+}
+
+# 요청 바디 설정
+json_data = {
+    'startDate': start, 
+    'endDate': end, 
+    'timeUnit': 'week', 
+    'keywordGroups': [{'groupName': keyword, 'keywords': [keyword]} for keyword in keywords], 
+    'device': ''
+}
+
+# 요청 보내기
+r = requests.post(url, json=json_data, headers=headers)
+
+# 응답 처리
+if r.status_code == 200:
+    response_data = r.json()
+    # 결과 데이터프레임 생성
+    all_data = []
+
+    for group in response_data['results']:
+        group_name = group['title']
+        for data in group['data']:
+            date = data['period']
+            value = data['ratio']
+            all_data.append([date, group_name, value])
+
+    df = pd.DataFrame(all_data, columns=['date', 'keyword', 'value'])
+
+    # 데이터프레임 출력
+    print(df)
+
+    # 데이터프레임을 CSV 파일로 저장
+    df.to_csv('data/trends/naver_trends_data_weekly.csv', index=False, encoding='utf-8-sig')
+
+else:
+    print("Error Code:", r.status_code)
+
+```
+
+### 연령별
+
+```{python}
+import requests
+import json
+from dotenv import load_dotenv
+import os
+import pandas as pd
+from datetime import datetime, timedelta
+
+# .env 파일 로드
+load_dotenv()
+
+# .env 파일에서 클라이언트 ID와 시크릿 가져오기
+client_id = os.getenv('NAVER_CLIENT_ID_PY')
+client_secret = os.getenv('NAVER_CLIENT_SECRET_PY')
+
+age_conv = {'1':'0∼12세','2':'13∼18세','3':'19∼24세','4':'25∼29세','5':'30∼34세', 
+            '6':'35∼39세','7':'40∼44세','8':'45∼49세','9':'50∼54세','10':'55∼59세','11':'60세 이상'}
+
+def getresult(startDate, endDate, timeUnit, keywordGroups, device, gender, ages):
+    url = "https://openapi.naver.com/v1/datalab/search"
+    response_results_all = pd.DataFrame()
+    
+    for age in ages:
+        body_dict = {}  # 검색 정보를 저장할 변수
+        body_dict['startDate'] = startDate
+        body_dict['endDate'] = endDate
+        body_dict['timeUnit'] = timeUnit
+        body_dict['keywordGroups'] = keywordGroups
+        body_dict['device'] = device
+        body_dict['gender'] = gender
+        body_dict['ages'] = [age]
+        
+        body = json.dumps(body_dict)
+        
+        headers = {
+            'X-Naver-Client-Id': client_id,
+            'X-Naver-Client-Secret': client_secret,
+            'Content-Type': 'application/json'
+        }
+        
+        response = requests.post(url, data=body, headers=headers)
+        rescode = response.status_code
+        
+        if rescode == 200:
+            response_json = response.json()
+        else:
+            print("Error Code:" + str(rescode))
+            return None
+        
+        # 결과데이터중 'data'와 'title'만 따로 DataFrame으로 저장
+        response_results = pd.DataFrame()
+        for data in response_json['results']:
+            result = pd.DataFrame(data['data'])
+            result['title'] = data['title']
+            result['age'] = age_conv[age]  # 연령대 정보를 추가하고 age_conv를 사용하여 변환
+            response_results = pd.concat([response_results, result])
+        
+        response_results_all = pd.concat([response_results_all, response_results])
+    
+    return response_results_all
+
+# 검색어 설정
+keywords = ["김건희", "김정숙", "김혜경"]
+
+# 최근 1년 기간 설정
+end_date = datetime.now()
+start_date = end_date - timedelta(days=365)
+start = start_date.strftime('%Y-%m-%d')
+end = end_date.strftime('%Y-%m-%d')
+
+# 검색 조건 설정
+timeUnit = "week"
+keywordGroups = [{'groupName': keyword, 'keywords': [keyword]} for keyword in keywords]
+device = ""
+gender = ""
+ages = ["3", "4", "5", "6", "7", "8", "9", "10", "11"]
+
+# 검색 결과 가져오기
+df = getresult(start, end, timeUnit, keywordGroups, device, gender, ages)
+
+# 데이터프레임 출력
+print(df)
+
+# 데이터프레임을 CSV 파일로 저장
+df.to_csv('data/trends/naver_trends_data_age_weekly.csv', index=False, encoding='utf-8-sig')
+
+```
+
+### 성별
+
+```{python}
+import requests
+import json
+from dotenv import load_dotenv
+import os
+import pandas as pd
+from datetime import datetime, timedelta
+
+# .env 파일 로드
+load_dotenv()
+
+# .env 파일에서 클라이언트 ID와 시크릿 가져오기
+client_id = os.getenv('NAVER_CLIENT_ID_PY')
+client_secret = os.getenv('NAVER_CLIENT_SECRET_PY')
+
+def getresult(startDate, endDate, timeUnit, keywordGroups, device, gender):
+    url = "https://openapi.naver.com/v1/datalab/search"
+    response_results_all = pd.DataFrame()
+    
+    for g in gender:
+        body_dict = {}  # 검색 정보를 저장할 변수
+        body_dict['startDate'] = startDate
+        body_dict['endDate'] = endDate
+        body_dict['timeUnit'] = timeUnit
+        body_dict['keywordGroups'] = keywordGroups
+        body_dict['device'] = device
+        body_dict['gender'] = g
+        body_dict['ages'] = []
+        
+        body = json.dumps(body_dict)
+        
+        headers = {
+            'X-Naver-Client-Id': client_id,
+            'X-Naver-Client-Secret': client_secret,
+            'Content-Type': 'application/json'
+        }
+        
+        response = requests.post(url, data=body, headers=headers)
+        rescode = response.status_code
+        
+        if rescode == 200:
+            response_json = response.json()
+        else:
+            print("Error Code:" + str(rescode))
+            return None
+        
+        # 결과데이터중 'data'와 'title'만 따로 DataFrame으로 저장
+        response_results = pd.DataFrame()
+        for data in response_json['results']:
+            result = pd.DataFrame(data['data'])
+            result['title'] = data['title']
+            result['gender'] = g  # 성별 정보를 추가
+            response_results = pd.concat([response_results, result])
+        
+        response_results_all = pd.concat([response_results_all, response_results])
+    
+    return response_results_all
+
+# 검색어 설정
+keywords = ["김건희", "김정숙", "김혜경"]
+
+# 최근 1년 기간 설정
+end_date = datetime.now()
+start_date = end_date - timedelta(days=365)
+start = start_date.strftime('%Y-%m-%d')
+end = end_date.strftime('%Y-%m-%d')
+
+# 검색 조건 설정
+timeUnit = "week"
+keywordGroups = [{'groupName': keyword, 'keywords': [keyword]} for keyword in keywords]
+device = ""
+gender = ["m", "f"]  # 성별: 남성(m), 여성(f)
+
+# 검색 결과 가져오기
+df = getresult(start, end, timeUnit, keywordGroups, device, gender)
+
+# 데이터프레임 출력
+print(df)
+
+# 데이터프레임을 CSV 파일로 저장
+df.to_csv('data/trends/naver_trends_data_gender_weekly.csv', index=False, encoding='utf-8-sig')
+
+```
+
+### 디바이스
+
+```{python}
+import requests
+import json
+from dotenv import load_dotenv
+import os
+import pandas as pd
+from datetime import datetime, timedelta
+
+# .env 파일 로드
+load_dotenv()
+
+# .env 파일에서 클라이언트 ID와 시크릿 가져오기
+client_id = os.getenv('NAVER_CLIENT_ID_PY')
+client_secret = os.getenv('NAVER_CLIENT_SECRET_PY')
+
+def getresult(startDate, endDate, timeUnit, keywordGroups, device_list, gender, ages):
+    url = "https://openapi.naver.com/v1/datalab/search"
+    response_results_all = pd.DataFrame()
+    
+    for device in device_list:
+        body_dict = {}  # 검색 정보를 저장할 변수
+        body_dict['startDate'] = startDate
+        body_dict['endDate'] = endDate
+        body_dict['timeUnit'] = timeUnit
+        body_dict['keywordGroups'] = keywordGroups
+        body_dict['device'] = device
+        body_dict['gender'] = gender
+        body_dict['ages'] = ages
+        
+        body = json.dumps(body_dict)
+        
+        headers = {
+            'X-Naver-Client-Id': client_id,
+            'X-Naver-Client-Secret': client_secret,
+            'Content-Type': 'application/json'
+        }
+        
+        response = requests.post(url, data=body, headers=headers)
+        rescode = response.status_code
+        
+        if rescode == 200:
+            response_json = response.json()
+        else:
+            print("Error Code:" + str(rescode))
+            return None
+        
+        # 결과데이터중 'data'와 'title'만 따로 DataFrame으로 저장
+        response_results = pd.DataFrame()
+        for data in response_json['results']:
+            result = pd.DataFrame(data['data'])
+            result['title'] = data['title']
+            result['device'] = device  # 디바이스 정보를 추가
+            response_results = pd.concat([response_results, result])
+        
+        response_results_all = pd.concat([response_results_all, response_results])
+    
+    return response_results_all
+
+# 검색어 설정
+keywords = ["김건희", "김정숙", "김혜경"]
+
+# 최근 1년 기간 설정
+end_date = datetime.now()
+start_date = end_date - timedelta(days=365)
+start = start_date.strftime('%Y-%m-%d')
+end = end_date.strftime('%Y-%m-%d')
+
+# 검색 조건 설정
+timeUnit = "week"
+keywordGroups = [{'groupName': keyword, 'keywords': [keyword]} for keyword in keywords]
+device_list = ["pc", "mo"]  # 디바이스: PC(pc), 모바일(mo)
+gender = ""
+ages = []
+
+# 검색 결과 가져오기
+df = getresult(start, end, timeUnit, keywordGroups, device_list, gender, ages)
+
+# 데이터프레임 출력
+print(df)
+
+# 데이터프레임을 CSV 파일로 저장
+df.to_csv('data/trends/naver_trends_data_device_weekly.csv', index=False, encoding='utf-8-sig')
+
+```
+
+## 데이터 시각화
+
+### 전체
+
+```{r}
+library(tidyverse)
+
+ntrends_raw <- read_csv("data/trends/naver_trends_data_weekly.csv")
+
+ntrends_g <- ntrends_raw |> 
+  ggplot(aes(x = date, y = value, color = keyword )) +
+    geom_point() +
+    geom_line() +
+    scale_color_manual(values = c("김건희" = "red", 
+                                  "김정숙" = "blue",
+                                  "김혜경" = "skyblue")) +
+    scale_x_date(date_labels = "%y-%m", date_breaks = "1 month") +
+    theme_korean() +
+    theme(legend.position = "top") +
+    labs(title = "네이버 트렌드 검색어 관심도 추이",
+         subtitle = "기간: 최근 1년",
+         x = NULL,
+         y = "관심도",
+         color = "검색어")
+
+ragg::agg_jpeg("images/trends/ntrends_all.jpeg", width = 10, height = 7, units = "in", res = 300)
+ntrends_g
+dev.off()
+
+```
+
+
+### 연령별
+
+```{r}
+ntrends_age_raw <- read_csv("data/trends/naver_trends_data_age_weekly.csv")
+
+ntrends_age_g <- ntrends_age_raw |> 
+  ggplot(aes(x=period, y=ratio, color=title)) +
+    geom_line() +
+    geom_point(size = 0.7) +
+    scale_color_manual(values = c("김건희" = "red", 
+                                  "김정숙" = "blue",
+                                  "김혜경" = "skyblue")) +
+    labs(title = "네이버 트렌드 검색어 세대별 관심도 추이",
+         subtitle = "기간: 최근 1년",
+         x = NULL,
+         y = "관심도",
+         color = "검색어") +
+    facet_wrap(~ age, scales = "free") +
+    scale_x_date(date_labels = "%y-%m", date_breaks = "1 month") +
+    theme_korean() +
+    theme(legend.position = "top",
+          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+  
+
+ragg::agg_jpeg("images/trends/ntrends_age.jpeg", width = 10, height = 7, units = "in", res = 300)
+ntrends_age_g
+dev.off()
+```
+
+### 성별
+
+```{r}
+ntrends_gender_raw <- read_csv("data/trends/naver_trends_data_gender_weekly.csv")
+
+ntrends_gender_g <- ntrends_gender_raw |> 
+  mutate(gender = factor(gender, levels = c("m", "f"), labels = c("남성", "여성"))) |> 
+  ggplot(aes(x=period, y=ratio, color=title)) +
+    geom_line() +
+    geom_point(size = 0.7) +
+    scale_color_manual(values = c("김건희" = "red", 
+                                  "김정숙" = "blue",
+                                  "김혜경" = "skyblue")) +
+    labs(title = "네이버 트렌드 검색어 성별 관심도 추이",
+         subtitle = "기간: 최근 1년",
+         x = NULL,
+         y = "관심도",
+         color = "검색어") +
+    facet_wrap(~ gender, scales = "free") +
+    scale_x_date(date_labels = "%y-%m", date_breaks = "1 month") +
+    theme_korean() +
+    theme(legend.position = "top",
+          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+  
+
+ragg::agg_jpeg("images/trends/ntrends_gender.jpeg", width = 10, height = 7, units = "in", res = 300)
+ntrends_gender_g
+dev.off()
+```
+
+### 디바이스
+
+```{r}
+ntrends_device_raw <- read_csv("data/trends/naver_trends_data_device_weekly.csv")
+
+ntrends_device_g <- ntrends_device_raw |> 
+  mutate(device = factor(device, levels = c("pc", "mo"), labels = c("PC", "모바일"))) |> 
+  ggplot(aes(x=period, y=ratio, color=title)) +
+    geom_line() +
+    geom_point(size = 0.7) +
+    scale_color_manual(values = c("김건희" = "red", 
+                                  "김정숙" = "blue",
+                                  "김혜경" = "skyblue")) +
+    labs(title = "네이버 트렌드 검색어 디바이스별 관심도 추이",
+         subtitle = "기간: 최근 1년",
+         x = NULL,
+         y = "관심도",
+         color = "검색어") +
+    facet_wrap(~ device, scales = "free") +
+    scale_x_date(date_labels = "%y-%m", date_breaks = "1 month") +
+    theme_korean() +
+    theme(legend.position = "top",
+          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+  
+
+ragg::agg_jpeg("images/trends/ntrends_device.jpeg", width = 10, height = 7, units = "in", res = 300)
+ntrends_device_g
+dev.off()
+```
+
