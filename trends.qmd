@@ -86,6 +86,7 @@ interest_over_time_df.to_csv('data/trends/google_trends_data_kr.csv')
 ```{python}
 from pytrends.request import TrendReq
 import pandas as pd
+from datetime import datetime, timedelta
 
 # pytrends 객체 생성
 pytrends = TrendReq(hl='ko-KR', tz=360)
@@ -93,21 +94,43 @@ pytrends = TrendReq(hl='ko-KR', tz=360)
 # 관심 검색어 설정
 keywords = ["김건희", "김정숙", "김혜경"]
 
-# 검색어 트렌드 요청 (대한민국으로 한정)
-pytrends.build_payload(keywords, cat=0, timeframe='today 12-m', geo='KR', gprop='')
+# 시작 날짜와 종료 날짜 설정
+start_date = datetime(2023, 5, 1)
+end_date = datetime(2024, 6, 30)
 
-# 지역별 관심도 추출
-interest_by_region_df = pytrends.interest_by_region(resolution='REGION', inc_low_vol=True, inc_geo_code=False)
+# 결과를 저장할 데이터프레임 초기화
+all_data = pd.DataFrame()
+
+# 월별로 데이터를 수집
+while start_date <= end_date:
+    # 현재 달의 첫날과 마지막 날 설정
+    current_start_date = start_date
+    current_end_date = (start_date + timedelta(days=31)).replace(day=1) - timedelta(days=1)
+    
+    # 현재 달의 검색어 트렌드 요청
+    timeframe = f'{current_start_date.strftime("%Y-%m-%d")} {current_end_date.strftime("%Y-%m-%d")}'
+    pytrends.build_payload(keywords, cat=0, timeframe=timeframe, geo='KR', gprop='')
+    
+    # 지역별 관심도 추출
+    interest_by_region_df = pytrends.interest_by_region(resolution='REGION', inc_low_vol=True, inc_geo_code=False)
+    interest_by_region_df['timeframe'] = timeframe  # 시간 프레임 추가
+    all_data = pd.concat([all_data, interest_by_region_df])
+    
+    # 다음 달로 이동
+    start_date = current_end_date + timedelta(days=1)
 
 # 데이터프레임 출력
-print(interest_by_region_df)
+print(all_data)
 
 # 데이터프레임 저장 (옵션)
-interest_over_time_df.to_csv('data/trends/google_trends_region_kr.csv')
+all_data.to_csv('data/trends/google_trends_data_by_region_and_month_kr.csv')
+
 
 ```
 
+## 데이터 시각화
 
+### 전체
 
 ```{r}
 library(tidyverse)
@@ -132,3 +155,27 @@ gtrends_raw |>
 
 ```
 
+
+### 시도별
+
+```{r}
+library(tidyverse)
+
+gtrends_region_raw <- read_csv("data/trends/google_trends_data_by_region_and_month_kr.csv")
+
+gtrends_region_raw |> 
+  pivot_longer(cols = c(김건희, 김정숙, 김혜경), 
+               names_to = "검색어", 
+               values_to = "관심도") |> 
+  ggplot(aes(x=timeframe, y=관심도, color=검색어, group = 검색어)) +
+    geom_line() +
+    geom_point(size = 0.7) +
+    scale_color_manual(values = c("김건희" = "red", 
+                                  "김정숙" = "blue",
+                                  "김혜경" = "skyblue")) +
+    labs(title = "구글 트렌드 검색어 관심도 추이",
+         x = NULL,
+         y = "관심도") +
+    facet_wrap(~ geoName, scales = "free") 
+
+```

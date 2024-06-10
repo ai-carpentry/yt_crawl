@@ -28,6 +28,7 @@ library(showtext)
 library(scales)
 library(tibble)
 library(purrr)
+library(stringr)
 
 font_add_google("Noto Sans KR", "notosanskr")  # Add Noto Sans Korean font
 showtext_auto()  # Enable showtext
