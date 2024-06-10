@@ -1,0 +1,134 @@
+---
+title: "네이버, 구글 트렌드 추세"
+format:
+  html:
+    self-contained: true
+    author-meta: "이광춘"
+    mermaid-format: png
+    # fig-width: 8 #https://quarto.org/docs/computations/execution-options.html#figure-options
+    # fig-height: 6
+    mermaid:
+      theme: neutral # https://quarto.org/docs/authoring/diagrams.html#mermaid-theming
+    theme:
+      - cosmo
+      - r2bit.scss
+    number-depth: 3
+    number-sections: true
+    colorlinks: true
+    # cite-method: biblatex
+    code-overflow: wrap
+    code-link: true
+
+    callout-appearance: simple
+
+    # 마크다운 표 캡션 위치
+    tbl-cap-location: bottom
+    lightbox:
+      match: auto
+      loop: false
+editor_options: 
+  chunk_output_type: console
+
+knitr:
+  opts_chunk:
+    message: false
+    warning: false
+    collapse: true
+    echo: false
+    code-overflow: code-overflow
+    comment: "#>"
+    R.options:
+      knitr.graphics.auto_pdf: true
+    dev: "ragg_png"
+    fig-asp: 0.618  # 1 / phi    
+---
+
+# 검색 트렌드
+
+
+[네이버 트렌드](https://datalab.naver.com/keyword/trendSearch.naver)와 [구글 트렌드](https://trends.google.com/trends/)는 각각 한국과 전 세계에서 인기 검색어와 키워드 분석을 통해 현재 사람들의 관심 주제를 파악할 수 있는 도구입니다. 네이버 트렌드는 한국 사용자 중심으로 실시간 검색어 순위와 분야별 인기 키워드를 제공하며, 네이버의 다양한 서비스 데이터를 활용합니다. 반면, 구글 트렌드는 전 세계 데이터를 기반으로 실시간 트렌드, 키워드 비교 분석, 연관 검색어 등을 제공하며 구글 검색, 유튜브, 뉴스 등의 데이터를 포함합니다. 두 도구 모두 사용자들의 관심사와 사회적 흐름을 이해하는 데 유용합니다.
+
+
+![](images/naver_google_trends.jpg)
+
+
+# 구글
+
+## 데이터 수집
+
+### 전체
+
+```{python}
+from pytrends.request import TrendReq
+import pandas as pd
+
+# pytrends 객체 생성
+pytrends = TrendReq(hl='ko-KR', tz=360)
+
+# 관심 검색어 설정
+keywords = ["김건희", "김정숙", "김혜경"]
+
+# 검색어 트렌드 요청 (대한민국으로 한정)
+pytrends.build_payload(keywords, cat=0, timeframe='today 12-m', geo='KR', gprop='')
+
+# 관심도 추출
+interest_over_time_df = pytrends.interest_over_time()
+
+# 데이터프레임 출력
+print(interest_over_time_df)
+
+# 데이터프레임 저장 (옵션)
+interest_over_time_df.to_csv('data/trends/google_trends_data_kr.csv')
+```
+
+### 시도별
+
+```{python}
+from pytrends.request import TrendReq
+import pandas as pd
+
+# pytrends 객체 생성
+pytrends = TrendReq(hl='ko-KR', tz=360)
+
+# 관심 검색어 설정
+keywords = ["김건희", "김정숙", "김혜경"]
+
+# 검색어 트렌드 요청 (대한민국으로 한정)
+pytrends.build_payload(keywords, cat=0, timeframe='today 12-m', geo='KR', gprop='')
+
+# 지역별 관심도 추출
+interest_by_region_df = pytrends.interest_by_region(resolution='REGION', inc_low_vol=True, inc_geo_code=False)
+
+# 데이터프레임 출력
+print(interest_by_region_df)
+
+# 데이터프레임 저장 (옵션)
+interest_over_time_df.to_csv('data/trends/google_trends_region_kr.csv')
+
+```
+
+
+
+```{r}
+library(tidyverse)
+
+gtrends_raw <- read_csv("data/trends/google_trends_data_kr.csv")
+
+gtrends_raw |> 
+  select(-isPartial) |> 
+  pivot_longer(cols = c(김건희, 김정숙, 김혜경), 
+               names_to = "검색어", 
+               values_to = "관심도") |> 
+  ggplot(aes(x=date, y=관심도, color=검색어)) +
+    geom_line() +
+    geom_point(size = 0.7) +
+    scale_color_manual(values = c("김건희" = "red", 
+                                  "김정숙" = "blue",
+                                  "김혜경" = "skyblue")) +
+    scale_x_date(date_labels = "%y-%m", date_breaks = "1 month") +
+    labs(title = "구글 트렌드 검색어 관심도 추이",
+         x = NULL,
+         y = "관심도") 
+
+```
+
