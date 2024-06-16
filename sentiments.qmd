@@ -1,0 +1,83 @@
+---
+title: "SNS 여론파악"
+format:
+  html:
+    self-contained: true
+    author-meta: "이광춘"
+    mermaid-format: png
+    # fig-width: 8 #https://quarto.org/docs/computations/execution-options.html#figure-options
+    # fig-height: 6
+    mermaid:
+      theme: neutral # https://quarto.org/docs/authoring/diagrams.html#mermaid-theming
+    theme:
+      - cosmo
+      - r2bit.scss
+    number-depth: 3
+    number-sections: true
+    colorlinks: true
+    # cite-method: biblatex
+    code-overflow: wrap
+    code-link: true
+
+    callout-appearance: simple
+
+    # 마크다운 표 캡션 위치
+    tbl-cap-location: bottom
+    lightbox:
+      match: auto
+      loop: false
+editor_options: 
+  chunk_output_type: console
+
+knitr:
+  opts_chunk:
+    message: false
+    warning: false
+    collapse: true
+    echo: false
+    code-overflow: code-overflow
+    comment: "#>"
+    R.options:
+      knitr.graphics.auto_pdf: true
+    dev: "ragg_png"
+    fig-asp: 0.618  # 1 / phi    
+---
+
+# 모형
+
+```{mermaid}
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '16px', 'fontFamily': 'Helvetica', 'textColor': '#333', 'mainBkg': '#f4f4f4', 'primaryColor': '#26a0da', 'secondaryColor': '#43b882', 'tertiaryColor': '#f08d49'}}}%%
+
+graph TB
+    subgraph trend["트렌드"]
+        AA[네이버 트렌드] --> B["인지(who/what)"]
+        AB[구글 트렌드]   --> B["인지(who/what)"]
+    end
+    
+    subgraph related["연관 검색"]
+        BA[네이버 연관검색] --> C["연관성(how/why)"]
+        BB[구글 연관검색] --> C
+    end
+
+    trend --> related
+
+    subgraph sentiment["감성 분석"]
+        CA[네이버 댓글] --> D["여론(sentiment)"]
+        CB[페북/인스타 댓글] --> D
+        CC[유튜브 댓글] --> D
+        news["텍스트"] --> CA
+        facebook["이미지"] --> CB
+        youtube["동영상"] --> CC
+    end
+
+    related --> sentiment
+
+    classDef default fill:#fff, stroke:#333, stroke-width:2px;
+    classDef trend fill:#26a0da, color:#fff, stroke:#26a0da, stroke-width:2px;
+    classDef related fill:#43b882, color:#fff, stroke:#43b882, stroke-width:2px;
+    classDef sentiment fill:#f08d49, color:#fff, stroke:#f08d49, stroke-width:2px;
+    class trend trend;
+    class related related;
+    class sentiment sentiment; 
+```
+
