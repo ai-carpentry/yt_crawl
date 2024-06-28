@@ -89,7 +89,8 @@ view_delta |>
         axis.text = element_text(size = 12),
         strip.text = element_text(size = 16),
         legend.text = element_text(size = 14),
-        legend.title = element_text(size = 16)
+        legend.title = element_text(size = 16),
+        axis.text.x = element_text(angle = 270, vjust = 0.5, hjust=1)
     ) +
     scale_color_manual(values = c(
         "민주당" = "#152484",
@@ -248,7 +249,8 @@ video_delta |>
         axis.text = element_text(size = 12),
         strip.text = element_text(size = 16),
         legend.text = element_text(size = 14),
-        legend.title = element_text(size = 16)
+        legend.title = element_text(size = 16),
+        axis.text.x = element_text(angle = 270, vjust = 0.5, hjust=1)
     ) +
     scale_color_manual(values = c(
         "민주당" = "#152484",
@@ -290,7 +292,8 @@ subscriber_delta |>
         axis.text = element_text(size = 12),
         strip.text = element_text(size = 16),
         legend.text = element_text(size = 14),
-        legend.title = element_text(size = 16)
+        legend.title = element_text(size = 16),
+        axis.text.x = element_text(angle = 270, vjust = 0.5, hjust=1)
     ) +
     scale_color_manual(values = c(
         "민주당" = "#152484",
